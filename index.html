@@ -779,6 +779,73 @@ const PAGAMENTO = {
    Enquanto a lista estiver vazia, qualquer nome é aceito.
    ════════════════════════════════════════════════════════════ */
 const CONVIDADOS = [
+  // Casamento civil
+  'Mãe',
+  'pai',
+  'Selma',
+  'Bia e Leandro',
+  'vó',
+  'Ivanira e família (4 total)',
+  'Wanessa (madrinha) e Pedro (padrinho)',
+  'Gus (padrinho)',
+  'Vó do Hebert',
+  'Mãe do Hebert',
+  'Tiane e cônjuge',
+  'Rosa e Hemerson (padrinhos)',
+  'Carol e cônjuge',
+  // Festa - família Jéssica
+  'Vanessa e família (4 no total)',
+  'Luana e família (3 no total)',
+  'Ticiane e família (3 no total)',
+  'Luan e esposa',
+  'Ivoneide e Pedro',
+  // Família e amigos do Hebert
+  'Solange',
+  'Marido da Solange',
+  'Regina',
+  'Marido da Regina',
+  'Miguel',
+  'Emanuel e família (4 no total)',
+  'Toinha e família (cônjuge, Negão e BB)',
+  'Cristina',
+  'Jessica e cônjuge',
+  'Caio (irmão) e cônjuge',
+  'Carlos Henrique (irmão) e cônjuge',
+  'Guilherme e cônjuge',
+  'Carlos Júnior e cônjuge',
+  'Victoria (irmã) e cônjuge',
+  'Isabel',
+  'Breno e cônjuge',
+  'Gabriel',
+  'Ivan e cônjuge',
+  'Renata Barreira e cônjuge',
+  'Suellen Barreira e cônjuge',
+  'Goinha e cônjuge',
+  'Girleide e Leticia (filha)',
+  // Amigos da Jéssica
+  'Rick e cônjuge Alisson',
+  'Pinto',
+  'Greg e Rafaela',
+  'João Marcelo e Ivan',
+  'Ana Claudia',
+  'Tati',
+  'Larissa',
+  'Marília e Dudu',
+  'Joeffson',
+  'João (DJ) e cônjuge',
+  'Nara e família (3 no total)',
+  'Joyce e Igor',
+  'Tassia',
+  'Cristiane',
+  'Lara, Japa e filha',
+  'Wellington e Teca',
+  'Camila',
+  'Fabiano e família (6 pessoas)',
+  'Huan',
+  'Harten e cônjuge',
+  'Erasmo e cônjuge',
+  'Jerliucy e Robinho',
+  'Mariani',
 ];
 
 /* ════════════════════════════════════════════════════════════
@@ -888,7 +955,10 @@ function startCountdown(){
     return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'')
       .toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
   }
-  var lista = CONVIDADOS.map(norm).filter(Boolean);
+  var STOP={e:1,da:1,do:1,de:1,no:1,na:1,familia:1,conjuge:1,esposa:1,esposo:1,marido:1,total:1,pessoas:1,pessoa:1,madrinha:1,madrinhas:1,padrinho:1,padrinhos:1,irmao:1,irma:1,filha:1,filho:1,bb:1};
+  function nameTok(t){return t.length>=3 && !STOP[t];}
+  function toks(s){return norm(s).split(' ').filter(nameTok);}
+  var lista = CONVIDADOS.map(toks).filter(function(t){return t.length;});
 
   var elNome=document.getElementById('rsvpNome');
   var elAd=document.getElementById('rsvpAdultos');
@@ -939,8 +1009,8 @@ function startCountdown(){
       mostra('err','Faltou o sobrenome','Por favor, escreva seu nome completo, do jeitinho que está no convite.');
       return;
     }
-    var n=norm(nome);
-    var achou = lista.length===0 ? true : lista.some(function(item){return confere(item,n);});
+    var gToks=toks(nome);
+    var achou = lista.length===0 ? true : lista.some(function(entry){return gToks.some(function(g){return entry.indexOf(g)>-1;});});
     if(!achou){
       mostra('err','Não encontramos seu nome','Confira se escreveu o nome completo como está no convite. Se achar que houve algum engano, fale com os noivos com carinho.');
       return;
