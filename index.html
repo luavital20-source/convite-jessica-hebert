@@ -361,6 +361,8 @@
   .pixm-chave b{display:block;font-weight:500;font-size:14px;color:var(--ink);letter-spacing:.06em;margin-top:3px;}
   @keyframes pixFade{from{opacity:0}to{opacity:1}}
   @keyframes pixUp{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:none}}
+  .gift-mini.buy.is-loading{opacity:.6;cursor:wait;}
+  .gift-mini.buy.is-erro{border-color:#b4544f;color:#b4544f;}
 </style>
 </head>
 <body>
@@ -760,8 +762,8 @@ const CONFIG = {
    💳  PAGAMENTO DOS PRESENTES — PREENCHER
    ════════════════════════════════════════════════════════════ */
 const PAGAMENTO = {
-  pixChave:        '',   // só números/e-mail, ex.: '85998177087' ou CPF '00000000000'
-  pixChaveVisivel: '',   // como aparece no modal, ex.: '(85) 99817-7087'
+  pixChave:        '+5585997878827',   // só números/e-mail, ex.: '85998177087' ou CPF '00000000000'
+  pixChaveVisivel: '(85) 99787-8827',   // como aparece no modal, ex.: '(85) 99817-7087'
   pixTitular:      'Jessica Santos',
   pixCidade:       'Fortaleza',
   // link do checkout de cartão. O índice do presente é anexado no final.
@@ -1030,19 +1032,27 @@ function startCountdown(){
   }
 })();
 
-/* ─── botões "Pagar com cartão": monta o link a partir de PAGAMENTO.cartaoBase ─── */
+/* ─── botões "Pagar com cartão": abre o checkout do InfinitePay via API ─── */
 (function(){
-  var base=PAGAMENTO.cartaoBase;
   Array.prototype.forEach.call(document.querySelectorAll('.gift-mini.buy'),function(a,i){
     var idx=a.dataset.i!=null?a.dataset.i:i;
-    if(base){ a.href=base+idx; }
-    else{
-      a.href='#';
-      a.addEventListener('click',function(e){
-        e.preventDefault();
-        console.warn('Link de cartão não configurado — preencha PAGAMENTO.cartaoBase no topo do script.');
-      });
-    }
+    a.href='#';
+    a.addEventListener('click',function(e){
+      e.preventDefault();
+      if(a.dataset.carregando)return;
+      a.dataset.carregando='1'; a.classList.add('is-loading');
+      fetch('/api/criar-pagamento',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({i:Number(idx)})})
+        .then(function(r){return r.json().catch(function(){return{};}).then(function(d){return{ok:r.ok,d:d};});})
+        .then(function(res){
+          if(!res.ok||!res.d.url) throw new Error((res.d&&res.d.erro)||'falha ao abrir o pagamento');
+          window.location.href=res.d.url;
+        })
+        .catch(function(err){
+          a.classList.remove('is-loading'); a.classList.add('is-erro');
+          console.error('[pagamento]',err);
+          setTimeout(function(){ a.classList.remove('is-erro'); delete a.dataset.carregando; },2600);
+        });
+    });
   });
 })();
 </script>
